@@ -1,8 +1,6 @@
-import { BuildConfig, ComponentRegistry, HydrateOptions, HydrateResults, PlatformApi } from '../util/interfaces';
+import { BuildConfig, ComponentMeta, ComponentRegistry, HydrateOptions, HydrateResults, PlatformApi } from '../util/interfaces';
 import { hydrateHtml } from '../server/hydrate-html';
 import { getBuildContext } from '../compiler/util';
-import { HAS_NAMED_SLOTS } from '../util/constants';
-import { parseComponentDecorators } from '../decorators/runtime-parse';
 import { mockLogger, mockStencilSystem } from './mocks';
 import { validateBuildConfig } from '../compiler/build/validation';
 
@@ -30,10 +28,9 @@ export function render(opts: RenderTestOptions): Promise<any> {
     };
 
     opts.components.forEach(testCmp => {
-      if (testCmp && testCmp.meta) {
-        const cmpMeta = parseComponentDecorators(config, testCmp.meta);
+      if (testCmp && testCmp.metadata) {
+        const cmpMeta: ComponentMeta = testCmp.metadata;
         cmpMeta.componentModule = testCmp;
-        cmpMeta.slotMeta = HAS_NAMED_SLOTS;
         registry[cmpMeta.tagNameMeta.toUpperCase()] = cmpMeta;
       }
     });

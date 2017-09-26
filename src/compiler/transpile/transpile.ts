@@ -1,3 +1,4 @@
+import addMetadataExport from './transformers/add-metadata-export';
 import { BuildConfig, BuildContext, Diagnostic, ModuleFile, ModuleFiles, StencilSystem, TranspileModulesResults, TranspileResults } from '../../util/interfaces';
 import { buildError, catchError, isSassFile, normalizePath } from '../util';
 import { componentTsFileClass, componentModuleFileClass } from './transformers/component-class';
@@ -60,7 +61,9 @@ export function transpileModule(config: BuildConfig, input: string, compilerOpti
     transformers: {
       before: [
         componentModuleFileClass(config, fileMeta, diagnostics),
-        updateLifecycleMethods()
+        removeImports(),
+        updateLifecycleMethods(),
+        addMetadataExport(fileMeta)
       ],
       after: [
         updateModuleFileMetaFromSlot(fileMeta),
