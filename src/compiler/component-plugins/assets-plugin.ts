@@ -1,51 +1,7 @@
-import { AssetsMeta, BuildConfig, BuildContext, ComponentOptions, ComponentMeta, ModuleFile } from '../../util/interfaces';
+import { AssetsMeta, BuildConfig, BuildContext } from '../../util/interfaces';
 import { catchError, normalizePath } from '../util';
 import { COLLECTION_DEPENDENCIES_DIR } from '../manifest/manifest-data';
 import { getAppDistDir, getAppWWWBuildDir } from '../app/generate-app-files';
-
-
-export function normalizeAssetsDir(config: BuildConfig, userOpts: ComponentOptions, moduleFile: ModuleFile, cmpMeta: ComponentMeta)  {
-  if (userOpts.assetsDir) {
-    normalizeAssetDir(config, moduleFile, cmpMeta, userOpts.assetsDir);
-  }
-
-  if (Array.isArray(userOpts.assetsDirs)) {
-    userOpts.assetsDirs.forEach(assetsDir => {
-      normalizeAssetDir(config, moduleFile, cmpMeta, assetsDir);
-    });
-  }
-}
-
-
-function normalizeAssetDir(config: BuildConfig, moduleFile: ModuleFile, cmpMeta: ComponentMeta, assetsDir: string) {
-  if (typeof assetsDir !== 'string' || assetsDir.trim() === '') return;
-
-  const assetsMeta: AssetsMeta = {};
-
-  // get the absolute path of the directory which the component is sitting in
-  const componentDir = normalizePath(config.sys.path.dirname(moduleFile.tsFilePath));
-
-  // get the relative path from the component file to the assets directory
-  assetsDir = normalizePath(assetsDir.trim());
-
-  if (config.sys.path.isAbsolute(assetsDir)) {
-    // this path is absolute already!
-    // add as the absolute path
-    assetsMeta.absolutePath = assetsDir;
-
-    // if this is an absolute path already, let's convert it to be relative
-    assetsMeta.cmpRelativePath = config.sys.path.relative(componentDir, assetsDir);
-
-  } else {
-    // this path is relative to the component
-    assetsMeta.cmpRelativePath = assetsDir;
-
-    // create the absolute path to the asset dir
-    assetsMeta.absolutePath = normalizePath(config.sys.path.join(componentDir, assetsDir));
-  }
-
-  (cmpMeta.assetsDirsMeta = cmpMeta.assetsDirsMeta || []).push(assetsMeta);
-}
 
 
 export function copyComponentAssets(config: BuildConfig, ctx: BuildContext) {

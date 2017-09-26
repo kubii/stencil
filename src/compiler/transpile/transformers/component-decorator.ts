@@ -1,8 +1,6 @@
 import { BuildConfig, ComponentMeta, ComponentOptions, Diagnostic, ModuleFile } from '../../../util/interfaces';
-import { buildError, catchError } from '../../util';
-import { normalizeAssetsDir } from '../../component-plugins/assets-plugin';
-import { normalizeStyles } from './normalize-styles';
-import { validateComponentTag } from '../../build/validation';
+import { catchError } from '../../util';
+import { parseComponentDecorator } from '../../../decorators/component';
 import * as ts from 'typescript';
 
 
@@ -46,15 +44,14 @@ function parseComponentMetaData(config: BuildConfig, moduleFile: ModuleFile, dia
     // parse user component options
     const userOpts: ComponentOptions = new Function(fnStr)();
 
+    if (!userOpts.tag || userOpts.tag.trim() === '') {
+      throw new Error(`tag missing in component decorator: ${text}`);
+    }
+
     // convert user component options from user into component meta
     cmpMeta = {};
 
-    // normalize user data
-    normalizeTag(config, moduleFile, diagnostics, userOpts, cmpMeta, text);
-    normalizeStyles(config, userOpts, moduleFile, cmpMeta);
-    normalizeAssetsDir(config, userOpts, moduleFile, cmpMeta);
-    normalizeHost(userOpts, cmpMeta);
-    normalizeShadow(userOpts, cmpMeta);
+    parseComponentDecorator(config, moduleFile, cmpMeta, userOpts);
 
   } catch (e) {
     // derp
@@ -65,50 +62,4 @@ function parseComponentMetaData(config: BuildConfig, moduleFile: ModuleFile, dia
   }
 
   return cmpMeta;
-}
-
-
-function normalizeTag(config: BuildConfig, moduleFile: ModuleFile, diagnostics: Diagnostic[], userOpts: ComponentOptions, cmpMeta: ComponentMeta, orgText: string) {
-  const relPath = config.sys.path.relative(config.rootDir, moduleFile.tsFilePath);
-
-  if ((<any>userOpts).selector) {
-    const d = buildError(diagnostics);
-    d.messageText = `Please use "tag" instead of "selector" in component decorator: ${(<any>userOpts).selector}`;
-    d.absFilePath = moduleFile.tsFilePath;
-    d.relFilePath = relPath;
-
-    cmpMeta.tagNameMeta = (<any>userOpts).selector;
-  }
-
-  if (!userOpts.tag || userOpts.tag.trim() === '') {
-    throw new Error(`tag missing in component decorator: ${orgText}`);
-  }
-
-  cmpMeta.tagNameMeta = validateComponentTag(userOpts.tag, relPath);
-}
-
-
-function normalizeShadow(userOpts: ComponentOptions, cmpMeta: ComponentMeta) {
-  const rawShadowValue: any = userOpts.shadow;
-
-  // default to NOT use shadow dom
-  cmpMeta.isShadowMeta = false;
-
-  // try to figure out a best guess depending on the value they put in
-  if (rawShadowValue !== undefined) {
-    if (typeof rawShadowValue === 'string') {
-      if (rawShadowValue.toLowerCase().trim() === 'true') {
-        cmpMeta.isShadowMeta = true;
-      }
-
-    } else {
-      // ensure it's a boolean
-      cmpMeta.isShadowMeta = !!rawShadowValue;
-    }
-  }
-}
-
-
-function normalizeHost(userOpts: ComponentOptions, cmpMeta: ComponentMeta) {
-  cmpMeta.hostMeta = userOpts.host || {};
 }

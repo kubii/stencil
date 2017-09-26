@@ -364,6 +364,7 @@ export interface RenderOptions {
   removeUnusedStyles?: boolean;
   inlineLoaderScript?: boolean;
   canonicalLink?: boolean;
+  ssrIds?: boolean;
 }
 
 
@@ -409,6 +410,8 @@ export interface HydrateOptions extends RenderOptions {
   dir?: string;
   lang?: string;
   isPrerender?: boolean;
+  serializeHtml?: boolean;
+  collectAnchors?: boolean;
 }
 
 
@@ -485,8 +488,15 @@ export interface CompileResults {
 }
 
 
-export interface TranspileResults {
+export interface TranspileModulesResults {
   moduleFiles: ModuleFiles;
+}
+
+
+export interface TranspileResults {
+  code: string;
+  diagnostics: Diagnostic[];
+  cmpMeta?: ComponentMeta;
 }
 
 
@@ -530,6 +540,16 @@ export interface LoggerTimeSpan {
 
 export interface ModulesImporterFn {
   (importer: any, h: Function, t: Function, Core: CoreContext, pubicPath: string): void;
+}
+
+
+
+export interface RuntimeDecoratorMeta {
+  Component?: ComponentOptions;
+  Props?: {
+    [propName: string]: PropOptions;
+  };
+  Element?: string;
 }
 
 
@@ -1139,6 +1159,7 @@ export interface HydrateResults {
   html?: string;
   styles?: string;
   anchors?: HydrateAnchor[];
+  root?: HTMLElement;
 }
 
 

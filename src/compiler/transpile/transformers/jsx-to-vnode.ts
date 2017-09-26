@@ -4,7 +4,6 @@ import * as util from './util';
 
 
 export function jsxToVNode(transformContext: ts.TransformationContext) {
-
   return (tsSourceFile: ts.SourceFile) => {
     return visit(tsSourceFile, null) as ts.SourceFile;
 
@@ -15,11 +14,13 @@ export function jsxToVNode(transformContext: ts.TransformationContext) {
           let parentNamespaceResponse;
 
           if ((<ts.Identifier>callNode.expression).text === 'h') {
+            const tag = callNode.arguments[0];
+            if (tag && typeof (tag as ts.StringLiteral).text === 'string') {
+              [node, parentNamespaceResponse] = convertJsxToVNode(callNode, parentNamespace);
 
-            [node, parentNamespaceResponse] = convertJsxToVNode(callNode, parentNamespace);
-
-            if (parentNamespaceResponse) {
-              parentNamespace = parentNamespaceResponse;
+              if (parentNamespaceResponse) {
+                parentNamespace = parentNamespaceResponse;
+              }
             }
           }
 
@@ -35,6 +36,7 @@ export function jsxToVNode(transformContext: ts.TransformationContext) {
 
 function convertJsxToVNode(callNode: ts.CallExpression, parentNamespace: string | null): [ts.CallExpression, string | null] {
   const [tag, props, ...children] = callNode.arguments;
+
   const tagName = (<ts.StringLiteral>tag).text.trim().toLowerCase();
   let newArgs: ts.Expression[] = [];
   let vnodeData: VNodeData = {};

@@ -1,8 +1,8 @@
-import { BuildConfig, ComponentMeta, ComponentOptions, ModuleFile, StyleMeta } from '../../../util/interfaces';
-import { normalizePath } from '../../util';
+import { BuildConfig, ComponentMeta, ComponentOptions, ModuleFile, StyleMeta } from '../util/interfaces';
+import { normalizePath } from '../compiler/util';
 
 
-export function normalizeStyles(config: BuildConfig, userOpts: ComponentOptions, moduleFile: ModuleFile, cmpMeta: ComponentMeta) {
+export function parseStyles(config: BuildConfig, userOpts: ComponentOptions, moduleFile: ModuleFile, cmpMeta: ComponentMeta) {
   normalizeStyleStr(userOpts, cmpMeta);
   normalizeStylePath(config, userOpts, moduleFile, cmpMeta);
   normalizeStylePaths(config, userOpts, moduleFile, cmpMeta);
